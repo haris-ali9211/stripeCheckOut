@@ -20,10 +20,21 @@ router.post('/create-checkout-session', async (req, res) => {
         },
         quantity: 1,
       },
+      {
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: 'Been bag',
+          },
+          unit_amount: 21100,
+        },
+        quantity: 4,
+      },
     ],
+    
     mode: 'payment',
-    success_url: `${process.env.URL_CLIENT}success,`,
-    cancel_url:  `${process.env.URL_CLIENT}cancel,`,
+    success_url: `${process.env.URL_CLIENT}success`,
+    cancel_url:  `${process.env.URL_CLIENT}cancel`,
   });
 
   res.send({
