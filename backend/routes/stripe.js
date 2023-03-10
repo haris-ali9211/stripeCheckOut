@@ -1,10 +1,12 @@
 const express = require('express')
 const Stripe = require("stripe")
 const router =express.Router();
+const auth = require("../middleware/auth");
+
 
 require("dotenv").config();
 
-const stripe = Stripe(process.env.STRIPE_KEY)
+const stripe = Stripe(process.env.STRIPE_KEY_ELBOWROOM)
 
 
 router.post('/create-checkout-session', async (req, res) => {
@@ -68,51 +70,35 @@ router.post('/create-checkout-session', async (req, res) => {
   });
 });
 
+router.post('/CreateAccountId', async (req, res) => {
+  const account = await stripe.accounts.create({
+      type: 'express'
+  });
 
-router.post('/checkout', async (req, res) => {
-  try {
-    // Enable phone number collection during Checkout session creation
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [{
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: 'Your Product Name',
-          },
-          unit_amount: 1000,
-        },
-        quantity: 1,
-      }],
-      mode: 'payment',
-      success_url: `${process.env.URL_CLIENT}success`,
-      cancel_url:  `${process.env.URL_CLIENT}cancel`,
-      phone_number_collection: {
-        enabled: true,
-      },
-    });
+  res.send({
+      id: account.id
+  });
 
-    // Send verification code to the provided phone number
-    const verification = await stripe.verificationSessions.create({
-      phone_number: "03012743740",
-      type: 'sms',
-      amount: 1000,
-      currency: 'usd',
-      metadata: {
-        checkout_session_id: session.id,
-      },
-    });
+})
 
-    // Retrieve the Checkout session and update its payment status
-    const updatedSession = await stripe.checkout.sessions.retrieve(session.id);
-    updatedSession.payment_status = 'paid';
-    await updatedSession.save();
+module.exports = router;
 
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'An error occurred during payment processing' });
-  }
-});
+
+router.post('/accountCreate', async (req,res)=>{
+
+  const accountLink = await stripe.accountLinks.create({
+    account: "acct_1MkE5x2eLekgtK2a",
+    refresh_url:`${process.env.URL_CLIENT}success`,
+    return_url: `${process.env.URL_CLIENT}cancel`,
+    type: 'account_onboarding',
+  });
+
+  res.send({
+    url: accountLink.url
+  });
+
+})
+
+
 
 module.exports = router;
