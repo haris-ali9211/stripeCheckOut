@@ -21,35 +21,38 @@ const PayButton = () => {
 
 
     const handleCreateAccountId = () => {
-        axios.post(`http://localhost:5000/api/checkout/CreateAccountId`,{})
+        axios.post(`http://localhost:5000/api/checkout/createAccountAndLink`)
         .then((res)=>{
-            console.log("==>",res)
-            // if(res.data.url){
-            //     window.location.href = res.data.url
-            // }
+            console.log("==>",res.data.id)
+            if(res.data.url){
+                window.location.href = res.data.url
+            }
         })
         .catch((error)=>{
             console.log(error)
         })
     }
 
-    const handleCreateAccount = () => {
-        axios.post(`http://localhost:5000/api/checkout/accountCreate`,{})
+
+    const handleTransfer = () => {
+        axios.post(`http://localhost:5000/api/checkout/transfer`)
         .then((res)=>{
-            console.log("==>",res)
-            // if(res.data.url){
-            //     window.location.href = res.data.url
-            // }
+            console.log("==>",res.data.id)
+            if(res.data.url){
+                window.location.href = res.data.url
+            }
         })
         .catch((error)=>{
             console.log(error)
         })
     }
+
+
     return (
         <>
             <button onClick={()=>handleCheckout()}>checkOut</button>
             <button onClick={()=>handleCreateAccountId()}>create Account id</button>
-            <button onClick={()=>handleCreateAccount()}>create Account</button>
+            <button onClick={()=>handleTransfer()}>Transfer</button>
         </>
     )
 }

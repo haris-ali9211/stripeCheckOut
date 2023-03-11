@@ -11,26 +11,6 @@ const stripe = Stripe(process.env.STRIPE_KEY_ELBOWROOM)
 
 router.post('/create-checkout-session', async (req, res) => {
 
-
-  // const line_items = req.body.cartItems.map((item) => {
-  //   return {
-  //     price_data: {
-  //       currency: "usd",
-  //       product_data: {
-  //         name: item.name,
-  //         images: [item.image],
-  //         description: item.desc,
-  //         metadata: {
-  //           id: item.id,
-  //         },
-  //       },
-  //       unit_amount: item.price * 100,
-  //     },
-  //     quantity: item.cartQuantity,
-  //   };
-  // });
-
-
   const session = await stripe.checkout.sessions.create({
     line_items: [
       {
@@ -70,35 +50,48 @@ router.post('/create-checkout-session', async (req, res) => {
   });
 });
 
-router.post('/CreateAccountId', async (req, res) => {
+
+router.post('/createAccountAndLink', async (req,res)=>{
+
+  // Create account ID
   const account = await stripe.accounts.create({
       type: 'express'
   });
 
-  res.send({
-      id: account.id
-  });
+  const accountId = account.id;
 
-})
-
-module.exports = router;
-
-
-router.post('/accountCreate', async (req,res)=>{
-
+  // Create account link
   const accountLink = await stripe.accountLinks.create({
-    account: "acct_1MkE5x2eLekgtK2a",
+    account: accountId,
     refresh_url:`${process.env.URL_CLIENT}success`,
     return_url: `${process.env.URL_CLIENT}cancel`,
     type: 'account_onboarding',
   });
 
   res.send({
+    accountId: accountId,
     url: accountLink.url
   });
-
 })
 
+
+router.post('/transfer', async(req,res)=>{
+
+  try{
+    const transfer = await stripe.transfers.create({
+      amount: 1000,
+      currency: "cad",
+      destination: "acct_1MkFAsGdGLhir5X8",
+    });
+
+    res.send({
+      data: transfer,
+    });
+  }
+  catch(error){
+      console.log("🚀 ~ file: stripe.js:88 ~ router.post ~ error:", error)
+  }
+})
 
 
 module.exports = router;
